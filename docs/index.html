@@ -197,34 +197,60 @@
             }
         }
 
-        function showZoom() {
-            document.getElementById('zoomSection').style.display = 'block';
-            document.getElementById('jitsiSection').style.display = 'none';
-            document.getElementById('status').textContent = 'Zoom 会议已启动';
-        }
+       let currentView = 'none';
 
-        function showJitsi() {
-            document.getElementById('jitsiSection').style.display = 'block';
-            document.getElementById('zoomSection').style.display = 'none';
-            document.getElementById('status').textContent = 'Jitsi 会议已启动';
-        }
+function showZoom() {
+    document.getElementById('zoomSection').style.display = 'block';
+    document.getElementById('jitsiSection').style.display = 'none';
+    document.getElementById('status').textContent = 'Zoom 会议已启动';
+    currentView = 'zoom';
+}
 
-        function showBoth() {
-            document.getElementById('zoomSection').style.display = 'block';
-            document.getElementById('jitsiSection').style.display = 'block';
-            document.getElementById('status').textContent = '双平台桥接模式';
+function showJitsi() {
+    document.getElementById('zoomSection').style.display = 'none';
+    document.getElementById('jitsiSection').style.display = 'block';
+    document.getElementById('status').textContent = 'Jitsi 会议已启动';
+    currentView = 'jitsi';
+    
+    // 确保Jitsi iframe正确加载
+    setTimeout(() => {
+        const jitsiFrame = document.querySelector('#jitsiSection iframe');
+        if (jitsiFrame) {
+            jitsiFrame.style.visibility = 'visible';
         }
+    }, 100);
+}
 
-        function showInstructions() {
-            const instructions = document.getElementById('instructions');
-            instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+function showBoth() {
+    document.getElementById('zoomSection').style.display = 'block';
+    document.getElementById('jitsiSection').style.display = 'block';
+    document.getElementById('status').textContent = '双平台桥接模式';
+    currentView = 'both';
+    
+    // 确保两个iframe都正确显示
+    setTimeout(() => {
+        const jitsiFrame = document.querySelector('#jitsiSection iframe');
+        if (jitsiFrame) {
+            jitsiFrame.style.visibility = 'visible';
         }
+    }, 100);
+}
 
-        // 初始化
-        const bridge = new MeetingBridge();
-        
-        // 默认显示说明
-        showInstructions();
+function showInstructions() {
+    const instructions = document.getElementById('instructions');
+    instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+}
+
+// 初始化
+const bridge = new MeetingBridge();
+showInstructions();
+
+// 页面加载后默认显示Jitsi进行测试
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        showJitsi();
+    }, 1000);
+});
     </script>
 </body>
 </html>
