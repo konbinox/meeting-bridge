@@ -1,0 +1,41 @@
+FROM ubuntu:20.04
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+# 安装Chromium和依赖
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    chromium-browser \
+    pulseaudio \
+    alsa-utils \
+    x11-apps \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxrandr2 \
+    libgbm1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# 创建非root用户
+RUN useradd -m -u 1000 jitsiuser
+USER jitsiuser
+WORKDIR /home/jitsiuser
+
+# 启动Chromium访问Jitsi
+CMD ["chromium-browser", \
+    "--kiosk", \
+    "--disable-features=TranslateUI", \
+    "--autoplay-policy=no-user-gesture-required", \
+    "--use-fake-ui-for-media-stream", \
+    "--no-first-run", \
+    "--disable-default-apps", \
+    "--disable-dev-shm-usage", \
+    "--disable-web-security", \
+    "--ignore-certificate-errors", \
+    "https://meet.jit.si/YOUR_JITSI_ROOM_NAME"]
