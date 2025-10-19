@@ -1,0 +1,41 @@
+FROM ubuntu:20.04
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+# 安装基础依赖
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    pulseaudio \
+    alsa-utils \
+    x11-apps \
+    libxcb-xtest0 \
+    libxcb-xinerama0 \
+    libxcb-randr0 \
+    libxcb-shape0 \
+    libxcb-xkb1 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-icccm4 \
+    libxcb-render-util0 \
+    libxcb-xfixes0 \
+    libgl1-mesa-glx \
+    libegl1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装Zoom
+RUN wget -O zoom.deb https://zoom.us/client/latest/zoom_amd64.deb \
+    && apt-get update \
+    && apt-get install -y ./zoom.deb \
+    && rm zoom.deb \
+    && apt-get clean
+
+# 创建非root用户
+RUN useradd -m -u 1000 zoomuser
+USER zoomuser
+WORKDIR /home/zoomuser
+
+# 启动命令（会议ID将在部署时替换）
+CMD ["zoom", "--url=zoommtg://zoom.us/join?confno=YOUR_ZOOM_MEETING_ID"]
