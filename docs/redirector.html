@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智能重定向中...</title>
+    <script>
+        function redirectBasedOnRegion() {
+            const userLanguage = navigator.language || navigator.userLanguage;
+            const isChina = userLanguage.includes('zh') || userLanguage.includes('CN');
+            
+            if (isChina) {
+                window.location.href = 'index.html?platform=jitsi';
+            } else {
+                window.location.href = 'index.html?platform=zoom';
+            }
+        }
+        
+        window.onload = redirectBasedOnRegion;
+    </script>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 100px;">
+        <h2>🌍 检测您的地区...</h2>
+        <p>正在为您选择最佳会议平台</p>
+    </div>
+</body>
+</html>
