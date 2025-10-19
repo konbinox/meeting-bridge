@@ -1,0 +1,287 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: assistant <assistant@example.com>
+Date: Sun, 19 Oct 2025 00:00:00 +0000
+Subject: [PATCH] add zoom->jitsi bridge prototype, docker, ci, testing docs
+
+---
+ docker/Dockerfile                        |  29 +++++++++++++++++++++++++----
+ bridge/README_NOTE.txt                   |   3 +++
+ bridge/requirements.txt                  |   3 +++
+ bridge/main.py                           |  33 +++++++++++++++++++++++++++++
+ bridge/bridge_server.py                  |  51 +++++++++++++++++++++++++++++++++++++++++
+ bridge/jitsi_injector.md                 |  29 +++++++++++++++++++++++++
+ docker-compose.yml                       |  16 ++++++++++++++
+ .github/workflows/deploy.yml             |  43 +++++++++++++++++++++++++++++++
+ TESTING.md                               |  34 ++++++++++++++++++++++++++++
+ diagrams/architecture.txt                |  10 ++++++++++
+ 11 files changed, 251 insertions(+)
+ create mode 100644 docker/Dockerfile
+ create mode 100644 bridge/README_NOTE.txt
+ create mode 100644 bridge/requirements.txt
+ create mode 100644 bridge/main.py
+ create mode 100644 bridge/bridge_server.py
+ create mode 100644 bridge/jitsi_injector.md
+ create mode 100644 docker-compose.yml
+ create mode 100644 .github/workflows/deploy.yml
+ create mode 100644 TESTING.md
+ create mode 100644 diagrams/architecture.txt
+---
+*** Begin Patch
+*** Add File: docker/Dockerfile
++FROM python:3.11-slim
++
++# Install system deps and ffmpeg, nodejs for future Puppeteer option
++RUN apt-get update && apt-get install -y --no-install-recommends \
++    ffmpeg \
++    curl \
++    ca-certificates \
++    gnupg \
++    build-essential \
++    && rm -rf /var/lib/apt/lists/*
++
++# Install Node.js (for optional puppeteer injector later)
++RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
++    && apt-get install -y nodejs && npm i -g pm2
++
++WORKDIR /app
++
++COPY bridge/requirements.txt ./
++RUN pip install --no-cache-dir -r requirements.txt
++
++COPY bridge/ /app/
++
++EXPOSE 1935 8080
++
++CMD ["python", "bridge_server.py"]
++
+*** End Patch
+*** Begin Patch
+*** Add File: bridge/README_NOTE.txt
++NOTE: This folder contains prototype code. The main purpose is to provide a working
++RTMP -> HLS demo and a small control server. Next step is WebRTC ingest (via Jibri
++or headless browser) to inject the stream into a Jitsi room.
++
+*** End Patch
+*** Begin Patch
+*** Add File: bridge/requirements.txt
++aiohttp
++python-dotenv
++requests
++
+*** End Patch
+*** Begin Patch
+*** Add File: bridge/main.py
++#!/usr/bin/env python3
++\"\"\"RTMP -> HLS prototype.
++
++This simple script pulls RTMP input (e.g. from Zoom custom RTMP) and produces
++HLS segments in /app/out/stream.m3u8 for quick verification.
++\"\"\"
++import os
++import subprocess
++from dotenv import load_dotenv
++
++load_dotenv()
++
++RTMP_INPUT = os.getenv('RTMP_INPUT', 'rtmp://0.0.0.0:1935/zoom/main')
++OUT_DIR = os.getenv('OUT_DIR', '/app/out')
++
++os.makedirs(OUT_DIR, exist_ok=True)
++
++FFMPEG_CMD = [
++    'ffmpeg', '-hide_banner', '-loglevel', 'info',
++    '-i', RTMP_INPUT,
++    '-c:v', 'libvpx-vp9', '-b:v', '800k',
++    '-c:a', 'libopus', '-b:a', '64k',
++    '-f', 'hls', '-hls_time', '2', '-hls_list_size', '3',
++    os.path.join(OUT_DIR, 'stream.m3u8')
++]
++
++def main():
++    print('Starting ffmpeg:', ' '.join(FFMPEG_CMD))
++    proc = subprocess.Popen(FFMPEG_CMD)
++    try:
++        proc.wait()
++    except KeyboardInterrupt:
++        proc.terminate()
++        proc.wait()
++
++if __name__ == '__main__':
++    main()
++
+*** End Patch
+*** Begin Patch
+*** Add File: bridge/bridge_server.py
++#!/usr/bin/env python3
++\"\"\"Small control server for the prototype: start/stop/status for ffmpeg job.
++
++Endpoints:
++  GET /start  -> starts ffmpeg pulling RTMP -> HLS
++  GET /stop   -> stops the ffmpeg process
++  GET /status -> returns JSON status
++\"\"\"
++import os
++import subprocess
++from aiohttp import web
++from dotenv import load_dotenv
++
++load_dotenv()
++
++RTMP_INPUT = os.getenv('RTMP_INPUT', 'rtmp://0.0.0.0:1935/zoom/main')
++OUT_DIR = os.getenv('OUT_DIR', '/app/out')
++FFMPEG_PROC = None
++
++def ffmpeg_cmd():
++    return [
++        'ffmpeg','-hide_banner','-loglevel','info','-i', RTMP_INPUT,
++        '-c:v','libvpx-vp9','-b:v','800k','-c:a','libopus','-b:a','64k',
++        '-f','hls','-hls_time','2','-hls_list_size','3', os.path.join(OUT_DIR,'stream.m3u8')
++    ]
++
++async def start(request):
++    global FFMPEG_PROC
++    if FFMPEG_PROC and FFMPEG_PROC.poll() is None:
++        return web.json_response({'status': 'running', 'pid': FFMPEG_PROC.pid})
++    os.makedirs(OUT_DIR, exist_ok=True)
++    cmd = ffmpeg_cmd()
++    FFMPEG_PROC = subprocess.Popen(cmd)
++    return web.json_response({'status': 'started', 'pid': FFMPEG_PROC.pid})
++
++async def stop(request):
++    global FFMPEG_PROC
++    if FFMPEG_PROC and FFMPEG_PROC.poll() is None:
++        FFMPEG_PROC.terminate()
++        return web.json_response({'status':'stopped'})
++    return web.json_response({'status':'not running'})
++
++async def status(request):
++    global FFMPEG_PROC
++    running = FFMPEG_PROC and FFMPEG_PROC.poll() is None
++    return web.json_response({'running': bool(running), 'pid': getattr(FFMPEG_PROC,'pid',None)})
++
++app = web.Application()
++app.add_routes([web.get('/start', start), web.get('/stop', stop), web.get('/status', status)])
++
++if __name__ == '__main__':
++    web.run_app(app, host='0.0.0.0', port=8080)
++
+*** End Patch
+*** Begin Patch
+*** Add File: bridge/jitsi_injector.md
++# 注入流到 Jitsi — 两种路线（说明）
++
++方案 A — 使用 Jibri（推荐用于自建 Jitsi 集群）
++1. 在 Jitsi 集群旁部署 Jibri（Jibri 是基于 headless Chrome + ffmpeg 的录制/转播器）。
++2. Jibri 可访问 HLS 或 RTMP 源，或者加载一个播放页并将播放内容通过本地浏览器发送到 Jitsi 房间。
++3. 优点：生产强、稳定、与 Jitsi 原生集成度高。
++
++方案 B — Headless 浏览器注入（快速原型）
++1. 在桥机容器里运行 headless Chromium（Puppeteer）。
++2. Chromium 打开一个本地网页，网页通过 video 元素播放 HLS 流（stream.m3u8）。
++3. 使用 `captureStream()` 获取 video 的 MediaStream，再用 lib-jitsi-meet 在网页端将其发布到 Jitsi 作为一个虚拟用户。
++4. 风险：headless 浏览器在无头环境下对 getDisplayMedia 支持有限；通常需 xvfb 或特权浏览器实例以绕过限制。适合快速验证与小规模使用。
++
++建议：先用本原型验证 RTMP->HLS（或 RTMP 播放），然后在自建 Jitsi 上部署 Jibri 做稳定注入；若暂时无法部署 Jibri，可试 headless 浏览器原型。
++
+*** End Patch
+*** Begin Patch
+*** Add File: docker-compose.yml
++version: '3.8'
++services:
++  bridge:
++    build: ./docker
++    environment:
++      - RTMP_INPUT=${RTMP_INPUT}
++      - OUT_DIR=/app/out
++    ports:
++      - '1935:1935'
++      - '8080:8080'
++    volumes:
++      - ./out:/app/out
++    restart: unless-stopped
++
+*** End Patch
+*** Begin Patch
+*** Add File: .github/workflows/deploy.yml
++name: Build and Deploy Bridge
++
++on:
++  push:
++    branches: [ main ]
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - name: Set up Docker Buildx
++        uses: docker/setup-buildx-action@v2
++      - name: Login to DockerHub
++        uses: docker/login-action@v2
++        with:
++          username: ${{ secrets.DOCKER_REGISTRY_USER }}
++          password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
++      - name: Build and push
++        uses: docker/build-push-action@v4
++        with:
++          push: true
++          tags: ${{ secrets.DOCKER_REGISTRY_USER }}/meeting-bridge:latest
++
++  deploy:
++    needs: build
++    runs-on: ubuntu-latest
++    steps:
++      - name: Deploy to server via SSH
++        uses: appleboy/ssh-action@v0.1.9
++        with:
++          host: ${{ secrets.SERVER_HOST }}
++          username: ${{ secrets.SERVER_USER }}
++          key: ${{ secrets.SSH_PRIVATE_KEY }}
++          script: |
++            docker pull ${{ secrets.DOCKER_REGISTRY_USER }}/meeting-bridge:latest
++            docker-compose down || true
++            docker-compose up -d
++
+*** End Patch
+*** Begin Patch
+*** Add File: TESTING.md
++# Testing & Local Validation Guide
++
++1) Start locally (Codespace / server):
++
++```bash
++# build & run
++docker compose up --build -d
++
++# check control server
++curl http://localhost:8080/status
++# to start ffmpeg pulling RTMP if not running
++curl http://localhost:8080/start
++```
++
++2) Configure Zoom:
++ - In Zoom meeting -> Live Streaming -> Custom RTMP:
++   `rtmp://<server-host>:1935/zoom/main`
++
++3) Verify HLS output:
++ - On server: `ls out/` should show `.m3u8` and `.ts` segments after streaming starts.
++ - Play locally: `ffplay http://<server-host>/out/stream.m3u8`
++ - Or serve `out/` with a simple nginx/static server and open the .m3u8 in browser player.
++
++4) Inject to Jitsi (quick test):
++ - Open a local test HTML page that has a `video` element pointing to the HLS URL and verify playback.
++ - To inject to Jitsi, follow `bridge/jitsi_injector.md` (either deploy Jibri or test headless injection).
++
+*** End Patch
+*** Begin Patch
+*** Add File: diagrams/architecture.txt
++[Zoom Host] --(RTMP)--> [Bridge Docker Container: ffmpeg + control]
++                       |-- produces HLS (/app/out/stream.m3u8)
++                       |-- optional WebRTC ingest module
++[Jitsi Injector (Jibri or headless)] <-- HLS/WebRTC ingress
++                       |
++                       v
++[Jitsi Room] --> [Participants]
++
+*** End Patch
+*** End Patch
