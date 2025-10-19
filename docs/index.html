@@ -127,16 +127,25 @@
         <div class="meeting-container">
             <div class="meeting-section" id="zoomSection" style="display: none;">
                 <h2>🎥 Zoom 会议</h2>
-                <div class="meeting-frame">
-                    <iframe 
-                        src="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
-                        width="100%" 
-                        height="100%" 
-                        frameborder="0"
-                        allow="camera; microphone; display-capture">
-                    </iframe>
+                <div class="meeting-frame" style="padding: 20px; text-align: center;">
+                    <h3>Zoom 会议</h3>
+                    <p>会议ID: 98404850589</p>
+                    <a href="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
+                       target="_blank" 
+                       class="btn btn-zoom" 
+                       style="display: inline-block; margin: 10px;">
+                        🚀 打开Zoom应用加入会议
+                        </a>
+        
+                        <!-- QR码部分 -->
+                    <div style="margin: 20px 0;">
+                        <p><strong>📱 手机扫码加入:</strong></p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
+                     alt="Zoom QR Code" 
+                 style="border: 1px solid #ddd; padding: 10px; background: white;">
                 </div>
             </div>
+        </div>
 
             <div class="meeting-section" id="jitsiSection" style="display: none;">
                 <h2>🎤 Jitsi 会议</h2>
