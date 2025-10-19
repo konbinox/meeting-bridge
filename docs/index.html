@@ -100,6 +100,14 @@
             font-weight: bold;
             color: #2c3e50;
         }
+        .platform-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 10px;
+        }
         @media (max-width: 768px) {
             .meeting-section {
                 flex: 100%;
@@ -135,24 +143,25 @@
             <p>2. Zoom 适合国际会议，Jitsi 适合国内访问</p>
             <p>3. 可以同时打开两个平台进行桥接</p>
             <p>4. 使用耳机避免回声问题</p>
+            <p>5. 点击平台卡片在新窗口打开会议</p>
         </div>
 
         <div class="meeting-container">
             <!-- Zoom Section -->
             <div class="meeting-section" id="zoomSection" style="display: none;">
                 <h2>🎥 Zoom 会议</h2>
-                <div class="meeting-frame">
-                    <h3>Zoom 会议</h3>
-                    <p>会议ID: 98404850589</p>
-                    <a href="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
-                       target="_blank" 
-                       class="btn btn-zoom" 
-                       style="display: inline-block; margin: 10px;">
-                        🚀 打开Zoom应用加入会议
-                    </a>
-                    
-                    <!-- QR码部分 -->
-                    <div style="margin: 20px 0; text-align: center;">
+                <div class="platform-card">
+                    <h3>Zoom 会议室</h3>
+                    <p>会议ID: <strong>98404850589</strong></p>
+                    <div style="margin: 25px 0;">
+                        <a href="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
+                           target="_blank" 
+                           class="btn btn-zoom" 
+                           style="font-size: 18px; padding: 15px 30px;">
+                            🚀 打开 Zoom 会议
+                        </a>
+                    </div>
+                    <div style="margin: 20px 0;">
                         <p><strong>📱 手机扫码加入:</strong></p>
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
                              alt="Zoom QR Code" 
@@ -164,15 +173,23 @@
             <!-- Jitsi Section -->
             <div class="meeting-section" id="jitsiSection" style="display: none;">
                 <h2>🎤 Jitsi 会议</h2>
-                <div class="meeting-frame">
-                    <iframe 
-                        src="https://meet.jit.si/Rolcc-A" 
-                        width="100%" 
-                        height="500px" 
-                        frameborder="0"
-                        allow="camera; microphone; display-capture"
-                        style="border-radius: 8px;">
-                    </iframe>
+                <div class="platform-card">
+                    <h3>Jitsi Meet 会议室</h3>
+                    <p>房间名: <strong>Rolcc-A</strong></p>
+                    <div style="margin: 25px 0;">
+                        <a href="https://meet.jit.si/Rolcc-A" 
+                           target="_blank" 
+                           class="btn btn-jitsi" 
+                           style="font-size: 18px; padding: 15px 30px;">
+                            🚀 打开 Jitsi 会议
+                        </a>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <p><strong>📱 手机扫码加入:</strong></p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://meet.jit.si/Rolcc-A" 
+                             alt="Jitsi QR Code" 
+                             style="border: 1px solid #ddd; padding: 10px; background: white; border-radius: 8px;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -197,60 +214,44 @@
             }
         }
 
-       let currentView = 'none';
+        let currentView = 'none';
 
-function showZoom() {
-    document.getElementById('zoomSection').style.display = 'block';
-    document.getElementById('jitsiSection').style.display = 'none';
-    document.getElementById('status').textContent = 'Zoom 会议已启动';
-    currentView = 'zoom';
-}
-
-function showJitsi() {
-    document.getElementById('zoomSection').style.display = 'none';
-    document.getElementById('jitsiSection').style.display = 'block';
-    document.getElementById('status').textContent = 'Jitsi 会议已启动';
-    currentView = 'jitsi';
-    
-    // 确保Jitsi iframe正确加载
-    setTimeout(() => {
-        const jitsiFrame = document.querySelector('#jitsiSection iframe');
-        if (jitsiFrame) {
-            jitsiFrame.style.visibility = 'visible';
+        function showZoom() {
+            document.getElementById('zoomSection').style.display = 'block';
+            document.getElementById('jitsiSection').style.display = 'none';
+            document.getElementById('status').textContent = 'Zoom 会议已启动';
+            currentView = 'zoom';
         }
-    }, 100);
-}
 
-function showBoth() {
-    document.getElementById('zoomSection').style.display = 'block';
-    document.getElementById('jitsiSection').style.display = 'block';
-    document.getElementById('status').textContent = '双平台桥接模式';
-    currentView = 'both';
-    
-    // 确保两个iframe都正确显示
-    setTimeout(() => {
-        const jitsiFrame = document.querySelector('#jitsiSection iframe');
-        if (jitsiFrame) {
-            jitsiFrame.style.visibility = 'visible';
+        function showJitsi() {
+            document.getElementById('zoomSection').style.display = 'none';
+            document.getElementById('jitsiSection').style.display = 'block';
+            document.getElementById('status').textContent = 'Jitsi 会议已启动';
+            currentView = 'jitsi';
         }
-    }, 100);
-}
 
-function showInstructions() {
-    const instructions = document.getElementById('instructions');
-    instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
-}
+        function showBoth() {
+            document.getElementById('zoomSection').style.display = 'block';
+            document.getElementById('jitsiSection').style.display = 'block';
+            document.getElementById('status').textContent = '双平台桥接模式';
+            currentView = 'both';
+        }
 
-// 初始化
-const bridge = new MeetingBridge();
-showInstructions();
+        function showInstructions() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+        }
 
-// 页面加载后默认显示Jitsi进行测试
-window.addEventListener('load', function() {
-    setTimeout(() => {
-        showJitsi();
-    }, 1000);
-});
+        // 初始化
+        const bridge = new MeetingBridge();
+        showInstructions();
+
+        // 页面加载后默认显示Zoom
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                showZoom();
+            }, 500);
+        });
     </script>
 </body>
 </html>
