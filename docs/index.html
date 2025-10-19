@@ -214,44 +214,47 @@
             }
         }
 
-        let currentView = 'none';
+       let currentView = 'none';
 
-        function showZoom() {
-            document.getElementById('zoomSection').style.display = 'block';
-            document.getElementById('jitsiSection').style.display = 'none';
-            document.getElementById('status').textContent = 'Zoom 会议已启动';
-            currentView = 'zoom';
-        }
+function showZoom() {
+    document.getElementById('zoomSection').style.display = 'block';
+    document.getElementById('jitsiSection').style.display = 'none';
+    document.getElementById('status').textContent = 'Zoom 会议已启动';
+    currentView = 'zoom';
+    console.log('显示Zoom，隐藏Jitsi');
+}
 
-        function showJitsi() {
-            document.getElementById('zoomSection').style.display = 'none';
-            document.getElementById('jitsiSection').style.display = 'block';
-            document.getElementById('status').textContent = 'Jitsi 会议已启动';
-            currentView = 'jitsi';
-        }
+function showJitsi() {
+    document.getElementById('zoomSection').style.display = 'none';
+    document.getElementById('jitsiSection').style.display = 'block';
+    document.getElementById('status').textContent = 'Jitsi 会议已启动';
+    currentView = 'jitsi';
+    console.log('显示Jitsi，隐藏Zoom');
+}
 
-        function showBoth() {
-            document.getElementById('zoomSection').style.display = 'block';
-            document.getElementById('jitsiSection').style.display = 'block';
-            document.getElementById('status').textContent = '双平台桥接模式';
-            currentView = 'both';
-        }
+function showBoth() {
+    document.getElementById('zoomSection').style.display = 'block';
+    document.getElementById('jitsiSection').style.display = 'block';
+    document.getElementById('status').textContent = '双平台桥接模式';
+    currentView = 'both';
+    console.log('同时显示两个平台');
+}
 
-        function showInstructions() {
-            const instructions = document.getElementById('instructions');
-            instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
-        }
+function showInstructions() {
+    const instructions = document.getElementById('instructions');
+    instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+}
 
-        // 初始化
-        const bridge = new MeetingBridge();
-        showInstructions();
+// 初始化
+const bridge = new MeetingBridge();
+showInstructions();
 
-        // 页面加载后默认显示Zoom
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                showZoom();
-            }, 500);
-        });
+// 页面加载后默认显示Zoom
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        showZoom();
+    }, 500);
+});
     </script>
 </body>
 </html>
