@@ -103,64 +103,44 @@
             <p>GitHub Pages 解决方案 - 完全免费</p>
         </div>
 
-        <div class="control-panel">
-            <button class="btn btn-zoom" onclick="showZoom()">进入 Zoom 会议</button>
-            <button class="btn btn-jitsi" onclick="showJitsi()">进入 Jitsi 会议</button>
-            <button class="btn" onclick="showBoth()">同时显示</button>
-            <button class="btn" onclick="showInstructions()">使用说明</button>
-            <span id="status" class="status">就绪</span>
-        </div>
-
-        <div class="status-panel">
-            <strong>系统状态:</strong> 
-            <span id="connectionStatus">检测中...</span>
-        </div>
-
-        <div id="instructions" class="instructions" style="display: none;">
-            <h3>📋 使用说明:</h3>
-            <p>1. 点击上方按钮选择会议平台</p>
-            <p>2. Zoom 适合国际会议，Jitsi 适合国内访问</p>
-            <p>3. 可以同时打开两个平台进行桥接</p>
-            <p>4. 使用耳机避免回声问题</p>
-        </div>
-
         <div class="meeting-container">
-            <div class="meeting-section" id="zoomSection" style="display: none;">
-                <h2>🎥 Zoom 会议</h2>
-                <div class="meeting-frame" style="padding: 20px; text-align: center;">
-                    <h3>Zoom 会议</h3>
-                    <p>会议ID: 98404850589</p>
-                    <a href="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
-                       target="_blank" 
-                       class="btn btn-zoom" 
-                       style="display: inline-block; margin: 10px;">
-                        🚀 打开Zoom应用加入会议
-                        </a>
-        
-                        <!-- QR码部分 -->
-                    <div style="margin: 20px 0;">
-                        <p><strong>📱 手机扫码加入:</strong></p>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
+    <!-- Zoom Section - 修复后 -->
+    <div class="meeting-section" id="zoomSection" style="display: none;">
+        <h2>🎥 Zoom 会议</h2>
+        <div class="meeting-frame" style="padding: 20px; text-align: center;">
+            <h3>Zoom 会议</h3>
+            <p>会议ID: 98404850589</p>
+            <a href="https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
+               target="_blank" 
+               class="btn btn-zoom" 
+               style="display: inline-block; margin: 10px;">
+                🚀 打开Zoom应用加入会议
+            </a>
+            
+            <!-- QR码部分 -->
+            <div style="margin: 20px 0;">
+                <p><strong>📱 手机扫码加入:</strong></p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://zoom.us/j/98404850589?pwd=ZCtHRUVzbTFwaXNucW5CY1JMajJjdz09" 
                      alt="Zoom QR Code" 
-                 style="border: 1px solid #ddd; padding: 10px; background: white;">
-                </div>
+                     style="border: 1px solid #ddd; padding: 10px; background: white;">
             </div>
         </div>
+    </div> <!-- 这个div闭合Zoom section -->
 
-            <div class="meeting-section" id="jitsiSection" style="display: none;">
-                <h2>🎤 Jitsi 会议</h2>
-                <div class="meeting-frame">
-                    <iframe 
-                        src="https://meet.jit.si/Rolcc-A" 
-                        width="100%" 
-                        height="100%" 
-                        frameborder="0"
-                        allow="camera; microphone; display-capture">
-                    </iframe>
-                </div>
-            </div>
+    <!-- Jitsi Section - 保持不变 -->
+    <div class="meeting-section" id="jitsiSection" style="display: none;">
+        <h2>🎤 Jitsi 会议</h2>
+        <div class="meeting-frame">
+            <iframe 
+                src="https://meet.jit.si/konbinox-meeting-room" 
+                width="100%" 
+                height="100%" 
+                frameborder="0"
+                allow="camera; microphone; display-capture">
+            </iframe>
         </div>
     </div>
+</div> <!-- 这个div闭合整个meeting-container -->
 
     <script>
         class MeetingBridge {
