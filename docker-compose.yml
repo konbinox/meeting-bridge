@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  zoom-bridge:
+    build: 
+      context: .
+      dockerfile: Dockerfile.zoom
+    container_name: zoom-meeting-bridge
+    network_mode: "host"
+    privileged: true
+    environment:
+      - DISPLAY=:0
+      - PULSE_SERVER=unix:/run/pulse/native
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/run/user/1000/pulse:/run/pulse/native"
+      - "/dev/snd:/dev/snd"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "zoom"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  jitsi-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile.jitsi
+    container_name: jitsi-meeting-bridge
+    network_mode: "host"
+    privileged: true
+    environment:
+      - DISPLAY=:0
+      - PULSE_SERVER=unix:/run/pulse/native
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/run/user/1000/pulse:/run/pulse/native"
+      - "/dev/snd:/dev/snd"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "chromium"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: meeting-bridge-net
