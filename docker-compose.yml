@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  zoom-bridge:
+    build: 
+      context: .
+      dockerfile: Dockerfile.zoom
+    container_name: zoom-meeting
+    network_mode: "host"
+    privileged: true
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/dev/snd:/dev/snd"
+    restart: unless-stopped
+
+  jitsi-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile.jitsi
+    container_name: jitsi-meeting
+    network_mode: "host"
+    privileged: true
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/dev/snd:/dev/snd"
+    restart: unless-stopped

@@ -1,0 +1,29 @@
+FROM ubuntu:20.04
+
+# 设置环境变量，避免交互式安装
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装基础依赖
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    libxcb-xtest0 \
+    libxcb-xinerama0 \
+    libxcb-randr0 \
+    libxcb-shape0 \
+    libxcb-xkb1 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-icccm4 \
+    libxcb-render-util0 \
+    libxcb-xfixes0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 下载并安装Zoom
+RUN wget -O zoom.deb https://zoom.us/client/latest/zoom_amd64.deb \
+    && apt-get update \
+    && apt-get install -y ./zoom.deb \
+    && rm zoom.deb
+
+# 设置默认命令
+CMD ["zoom", "--url=zoommtg://zoom.us/join?confno=123456789"]

@@ -1,0 +1,18 @@
+FROM ubuntu:20.04
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装Chromium浏览器
+RUN apt-get update && apt-get install -y \
+    chromium-browser \
+    pulseaudio \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置Chromium flags
+CMD ["chromium-browser", \
+    "--kiosk", \
+    "--disable-features=TranslateUI", \
+    "--autoplay-policy=no-user-gesture-required", \
+    "--use-fake-ui-for-media-stream", \
+    "https://meet.jit.si/MyMeetingRoom"]
